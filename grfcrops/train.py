@@ -61,31 +61,45 @@ def get_dataloader(datapath, mode, batchsize, workers, preload_ram=False, level=
 
     if mode == "unittest":
         belle_ile = breizhcrops.BreizhCrops(region="belle-ile", root=datapath)
-    else:
+    elif ("grfvoj" not in mode) and ("grfbre" not in mode):
+        
         frh01 = breizhcrops.BreizhCrops(region="frh01", root=datapath,
                                         preload_ram=preload_ram, level=level)
         frh02 = breizhcrops.BreizhCrops(region="frh02", root=datapath,
                                         preload_ram=preload_ram, level=level)
         frh03 = breizhcrops.BreizhCrops(region="frh03", root=datapath,
                                         preload_ram=preload_ram, level=level)
-
-    if "evaluation" in mode:
+    
+    if ("evaluation" in mode) and ("grfvoj" not in mode) and ("grfbre" not in mode):
             frh04 = breizhcrops.BreizhCrops(region="frh04", root=datapath,
                                             preload_ram=preload_ram, level=level)
+    if "grfvoj" in mode:
+        frh01 = VojvodinaDataset(X_path='../data/X_sr_01.npy', y_path= '../data/y_sr_01.npy')
+        frh02 = VojvodinaDataset(X_path='../data/X_sr_02.npy', y_path= '../data/y_sr_02.npy')
+        frh03 = VojvodinaDataset(X_path='../data/X_sr_03.npy', y_path= '../data/y_sr_03.npy')
+        frh04 = VojvodinaDataset(X_path='../data/X_sr_04.npy', y_path= '../data/y_sr_04.npy')
+    
+    if "grfbre" in mode:
+        frh01 = BretagneDataset(X_path='../data/X_01.npy', y_path= '../data/y_01.npy')
+        frh02 = BretagneDataset(X_path='../data/X_02.npy', y_path= '../data/y_02.npy')
+        frh03 = BretagneDataset(X_path='../data/X_03.npy', y_path= '../data/y_03.npy')
+        frh04 = BretagneDataset(X_path='../data/X_04.npy', y_path= '../data/y_04.npy')
+        
+        
 
-    if mode == "evaluation" or mode == "evaluation1":
+    if mode == "evaluation" or ("evaluation1" in mode):
         traindatasets = torch.utils.data.ConcatDataset([frh01, frh02, frh03])
         testdataset = frh04
-    elif mode == "evaluation2":
+    elif ("evaluation2" in mode):
         traindatasets = torch.utils.data.ConcatDataset([frh01, frh02, frh04])
         testdataset = frh03
-    elif mode == "evaluation3":
+    elif ("evaluation3" in mode):
         traindatasets = torch.utils.data.ConcatDataset([frh01, frh03, frh04])
         testdataset = frh02
-    elif mode == "evaluation4":
+    elif ("evaluation4" in mode):
         traindatasets = torch.utils.data.ConcatDataset([frh02, frh03, frh04])
         testdataset = frh01
-    elif mode == "validation":
+    elif ("validation" in mode):
         traindatasets = torch.utils.data.ConcatDataset([frh01, frh02])
         testdataset = frh03
     elif mode == "unittest":
@@ -103,16 +117,18 @@ def get_dataloader(datapath, mode, batchsize, workers, preload_ram=False, level=
     traindataloader = DataLoader(traindatasets, batch_size=batchsize, shuffle=True, num_workers=workers)
     testdataloader = DataLoader(testdataset, batch_size=batchsize, shuffle=False, num_workers=workers)
 
-    meta = dict(
+    
+    meta = dict()
+    if "grfvoj" in mode:
+        meta["ndims"] = 48
+        meta["num_classes"] = 6
+        meta["sequencelength"] = 40
+    else:
+        meta = dict(
         ndims=13 if level == "L1C" else 10,
         num_classes=len(belle_ile.classes) if mode == "unittest" else len(frh01.classes),
         sequencelength=45
-    )
-    
-    if mode in ["grf_unitt_vojvodina", "grf_unitt_bretagne"]:
-        meta["ndims"] = 48
-        meta["num_classes"] = 9
-        meta["sequencelength"] = 40
+        )
 
     return traindataloader, testdataloader, meta
 

@@ -1,6 +1,7 @@
 data
 .ipynb_checkpoints
 .idea
+.devcontainer
 models/*
 .pytest_cache
 breizhcrops_dataset

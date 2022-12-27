@@ -14,8 +14,7 @@ def save(model, path="model.pth"):
 
 
 def main(args):
-    mode = "evaluation" + str(args.fold)
-    mode = 'grf_unitt_vojvodina'
+    mode = "evaluation" + str(args.fold) + "grfvoj"
     traindataloader, testdataloader, meta = get_dataloader(args.datapath, mode, args.batchsize,
                                                            args.workers, level=args.level, preload_ram=args.preload_ram)
 

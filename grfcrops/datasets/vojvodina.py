@@ -10,13 +10,10 @@ __all__ = ['VojvodinaDataset']
 VOJVODINA_LABELS = {
             'barley' : 0,
             'maize' : 1,
-            'not_defined' : 2,
-            'olives' : 3,
-            'rapeseed' : 4,
-            'soya' : 5,
-            'sugarbeet' : 6,
-            'sunflower' : 7,
-            'wheat' : 8
+            'rapeseed' : 2,
+            'soya' : 3,
+            'sunflower' : 4,
+            'wheat' : 5
 }
 
 def get_transform_label_to_code():
