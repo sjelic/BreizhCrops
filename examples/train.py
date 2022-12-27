@@ -6,6 +6,8 @@ sys.path.append("..")
 import argparse
 
 import breizhcrops
+from ..grfcrops.datasets.vojvodina import VojvodinaDataset
+from ..grfcrops.datasets.bretagne import BretagneDataset
 from breizhcrops.models import LSTM, TempCNN, MSResNet, TransformerModel, InceptionTime, StarRNN, OmniScaleCNN, PETransformerModel
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -89,6 +91,12 @@ def get_dataloader(datapath, mode, batchsize, workers, preload_ram=False, level=
     elif mode == "unittest":
         traindatasets = belle_ile
         testdataset = belle_ile
+    elif mode == "grf_unitt_vojvodina":
+        traindatasets = VojvodinaDataset()
+        testdataset = traindatasets
+    elif mode == "grf_unitt_bretagne":
+        traindatasets = BretagneDataset()
+        testdataset = traindatasets
     else:
         raise ValueError("only --mode 'validation' or 'evaluation' allowed")
 
@@ -100,6 +108,11 @@ def get_dataloader(datapath, mode, batchsize, workers, preload_ram=False, level=
         num_classes=len(belle_ile.classes) if mode == "unittest" else len(frh01.classes),
         sequencelength=45
     )
+    
+    if mode in ["grf_unitt_vojvodina", "grf_unitt_bretagne"]:
+        meta["ndims"] = 48
+        meta["num_classes"] = 9
+        meta["sequencelength"] = 40
 
     return traindataloader, testdataloader, meta
 
