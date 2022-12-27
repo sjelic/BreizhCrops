@@ -123,6 +123,10 @@ def get_dataloader(datapath, mode, batchsize, workers, preload_ram=False, level=
         meta["ndims"] = 48
         meta["num_classes"] = 6
         meta["sequencelength"] = 40
+    elif "grfbre" in mode:
+        meta["ndims"] = 48
+        meta["num_classes"] = 9
+        meta["sequencelength"] = 40
     else:
         meta = dict(
         ndims=13 if level == "L1C" else 10,
