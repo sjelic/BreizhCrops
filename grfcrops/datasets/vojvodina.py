@@ -1,6 +1,7 @@
 
 from torch.utils.data import Dataset
 import torch
+import os
 import numpy as np
 from  breizhcrops.datasets.breizhcrops import get_default_target_transform
 
@@ -12,8 +13,9 @@ VOJVODINA_LABELS = {
             'maize' : 1,
             'rapeseed' : 2,
             'soya' : 3,
-            'sunflower' : 4,
-            'wheat' : 5
+            'sugarbeet ' : 4,
+            'sunflower' : 5,
+            'wheat' : 6
 }
 
 def get_transform_label_to_code():
@@ -25,12 +27,12 @@ def get_default_simple_transform():
 
 
 class VojvodinaDataset(Dataset):
-    def __init__(self, X_path = '../data/X_sr.npy', y_path = '../data/y_sr.npy', transform = None, target_transform = None ):
+    def __init__(self, country, name, data_dir='../data', transform = None, target_transform = None ):
         
-        
-        
-        self.X = np.load(X_path)
-        self.y = np.load(y_path)
+        self.data_dir = data_dir
+        self.country = country
+        self.name = name
+        self.y = np.load(os.path.join(data_dir,country,name, 'y.npy'))
     
         if transform is None:
             self.transform = lambda x : get_default_simple_transform()(x)
@@ -42,11 +44,10 @@ class VojvodinaDataset(Dataset):
             self.target_transform = target_transform
     
     def __len__(self):
-        return self.X.shape[0]
+        return len([ f for f in os.listdir(os.path.join(self.data_dir, self.country, self.name)) if f.endswith(".npy") ]) - 1
     
     def __getitem__(self, idx):
-        x = self.transform(self.X[idx])
-        y = self.target_transform(self.y[idx])
-        return x, y, idx
+        x = np.load(os.path.join(self.data_dir,self.country,self.name, f'{idx}.npy'))
+        return x, self.y, idx
     
 
