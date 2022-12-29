@@ -74,16 +74,16 @@ def get_dataloader(datapath, mode, batchsize, workers, preload_ram=False, level=
             frh04 = breizhcrops.BreizhCrops(region="frh04", root=datapath,
                                             preload_ram=preload_ram, level=level)
     if "grfvoj" in mode:
-        frh01 = VojvodinaDataset(X_path='../data/X_sr_01.npy', y_path= '../data/y_sr_01.npy')
-        frh02 = VojvodinaDataset(X_path='../data/X_sr_02.npy', y_path= '../data/y_sr_02.npy')
-        frh03 = VojvodinaDataset(X_path='../data/X_sr_03.npy', y_path= '../data/y_sr_03.npy')
-        frh04 = VojvodinaDataset(X_path='../data/X_sr_04.npy', y_path= '../data/y_sr_04.npy')
+        frh01 = VojvodinaDataset(data_dir='../data', country='serbia', name='data_serbia_01')
+        frh02 = VojvodinaDataset(data_dir='../data', country='serbia', name='data_serbia_02')
+        frh03 = VojvodinaDataset(data_dir='../data', country='serbia', name='data_serbia_03')
+        frh04 = VojvodinaDataset(data_dir='../data', country='serbia', name='data_serbia_04')
     
     if "grfbre" in mode:
-        frh01 = BretagneDataset(X_path='../data/X_01.npy', y_path= '../data/y_01.npy')
-        frh02 = BretagneDataset(X_path='../data/X_02.npy', y_path= '../data/y_02.npy')
-        frh03 = BretagneDataset(X_path='../data/X_03.npy', y_path= '../data/y_03.npy')
-        frh04 = BretagneDataset(X_path='../data/X_04.npy', y_path= '../data/y_04.npy')
+        frh01 = BretagneDataset(data_dir='../data', country='france', name='data_france_01')
+        frh02 = BretagneDataset(data_dir='../data', country='france', name='data_france_02')
+        frh03 = BretagneDataset(data_dir='../data', country='france', name='data_france_03')
+        frh04 = BretagneDataset(data_dir='../data', country='france', name='data_france_04')
         
         
 
@@ -106,10 +106,10 @@ def get_dataloader(datapath, mode, batchsize, workers, preload_ram=False, level=
         traindatasets = belle_ile
         testdataset = belle_ile
     elif mode == "grf_unitt_vojvodina":
-        traindatasets = VojvodinaDataset()
+        traindatasets = VojvodinaDataset(data_dir='../data', country='serbia', name='data_serbia')
         testdataset = traindatasets
     elif mode == "grf_unitt_bretagne":
-        traindatasets = BretagneDataset()
+        traindatasets = BretagneDataset(data_dir='../data', country='france', name='data_france')
         testdataset = traindatasets
     else:
         raise ValueError("only --mode 'validation' or 'evaluation' allowed")
@@ -121,7 +121,7 @@ def get_dataloader(datapath, mode, batchsize, workers, preload_ram=False, level=
     meta = dict()
     if "grfvoj" in mode:
         meta["ndims"] = 48
-        meta["num_classes"] = 6
+        meta["num_classes"] = 7
         meta["sequencelength"] = 40
     elif "grfbre" in mode:
         meta["ndims"] = 48
