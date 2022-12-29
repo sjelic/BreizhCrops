@@ -64,7 +64,7 @@ def parse_args():
     parser.add_argument(
         '-p', '--path', type=str, default='../data', help='The path of the base data directory.')
     parser.add_argument(
-        '-f','--filterout', type=list, default=['not_defined', 'olives'], help='The list of classes to filter out')
+        '-f','--filterout', type=list, default=[], help='The list of classes to filter out')
 
     args = parser.parse_args()
     
