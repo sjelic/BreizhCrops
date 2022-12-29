@@ -120,11 +120,11 @@ def get_dataloader(datapath, mode, batchsize, workers, preload_ram=False, level=
     
     meta = dict()
     if "grfvoj" in mode:
-        meta["ndims"] = 48
+        meta["ndims"] = 38
         meta["num_classes"] = 7
         meta["sequencelength"] = 40
     elif "grfbre" in mode:
-        meta["ndims"] = 48
+        meta["ndims"] = 38
         meta["num_classes"] = 9
         meta["sequencelength"] = 40
     else:
