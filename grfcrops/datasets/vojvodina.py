@@ -13,7 +13,7 @@ VOJVODINA_LABELS = {
             'maize' : 1,
             'rapeseed' : 2,
             'soya' : 3,
-            'sugarbeet ' : 4,
+            'sugarbeet' : 4,
             'sunflower' : 5,
             'wheat' : 6
 }
@@ -47,7 +47,8 @@ class VojvodinaDataset(Dataset):
         return len([ f for f in os.listdir(os.path.join(self.data_dir, self.country, self.name)) if f.endswith(".npy") ]) - 1
     
     def __getitem__(self, idx):
-        x = np.load(os.path.join(self.data_dir,self.country,self.name, f'{idx}.npy'))
-        return x, self.y, idx
+        x = self.transform(np.load(os.path.join(self.data_dir,self.country,self.name, f'{idx}.npy')))
+        
+        return x, self.target_transform(self.y[idx]), idx
     
 
