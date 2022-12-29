@@ -34,21 +34,39 @@ def prepare_datasets(path, country, name, Xpath, ypath, filter_out):
     y = np.load(ypath)
     make_dataset_dir(path, country, name)
     X, y = create_dataset(path, country, name,X,y,filter_out)
+    _mean = X.mean(axis=0)
+    _std = X.std(axis=0)
+    _min = X.min(axis=0)
+    _max = X.max(axis=0)
+    _len = X.shape[0]
+    np.save( os.path.join(path,country,'mean.npy'), _mean)
+    np.save( os.path.join(path,country,'std.npy'), _std)
+    np.save( os.path.join(path,country,'min.npy'), _min)
+    np.save( os.path.join(path,country,'max.npy'), _max)
+    np.save( os.path.join(path,country,'len.npy'), _len)
+    
+    
+    #make_dataset_dir(path, country, name)
+    #X, y = create_dataset(path, country, name,(X - _mean)/(_len*_std),y,[])
+    
+    
     X_0102, X_0304, y_0102, y_0304 = train_test_split(X, y, test_size=0.5, random_state=1, shuffle=True, stratify=y)
     X_01, X_02, y_01, y_02 = train_test_split(X_0102, y_0102, test_size=0.5, random_state=1, shuffle=True, stratify=y_0102)
     X_03, X_04, y_03, y_04 = train_test_split(X_0304, y_0304, test_size=0.5, random_state=1, shuffle=True, stratify=y_0304)
     
     make_dataset_dir(path, country, f'{name}_01')
-    _, _ = create_dataset(path, country, f'{name}_01', X_01,y_01,[])
+    _, _ = create_dataset(path, country, f'{name}_01', (X_01 - _mean)/(_std),y_01,[])
 
     make_dataset_dir(path, country, f'{name}_02')
-    _, _ = create_dataset(path, country, f'{name}_02', X_02,y_02,[])
+    _, _ = create_dataset(path, country, f'{name}_02', (X_02 - _mean)/(_std),y_02,[])
 
     make_dataset_dir(path, country, f'{name}_03')
-    _, _ = create_dataset(path, country, f'{name}_03', X_03,y_03,[])
+    _, _ = create_dataset(path, country, f'{name}_03', (X_03 - _mean)/(_std),y_03,[])
 
     make_dataset_dir(path, country, f'{name}_04')
-    _, _ = create_dataset(path, country, f'{name}_04', X_04,y_04,[])
+    _, _ = create_dataset(path, country, f'{name}_04', (X_04 - _mean)/(_std),y_04,[])
+        
+    
     
 
 def parse_args():
@@ -64,7 +82,7 @@ def parse_args():
     parser.add_argument(
         '-p', '--path', type=str, default='../data', help='The path of the base data directory.')
     parser.add_argument(
-        '-f','--filterout', type=list, default=[], help='The list of classes to filter out')
+        '-f','--filterout', type=list, default=['not_defined', 'olives'], help='The list of classes to filter out')
 
     args = parser.parse_args()
     
