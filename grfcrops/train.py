@@ -212,7 +212,7 @@ def train_epoch(model, optimizer, criterion, dataloader, device):
             loss.backward()
             optimizer.step()
             iterator.set_description(f"train loss={loss:.2f}")
-            loss.cpu().detach().numpy()
+            loss = loss.cpu().detach()
             losses.append(loss)
     return torch.stack(losses)
 
