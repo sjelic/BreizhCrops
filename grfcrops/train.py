@@ -207,7 +207,8 @@ def train_epoch(model, optimizer, criterion, dataloader, device):
         for idx, batch in iterator:
             optimizer.zero_grad()
             x, y_true, _ = batch
-            loss = criterion(model.forward(x.to(device)), y_true.to(device))
+            y_pred = model.forward(x.to(device))
+            loss = criterion(y_pred, y_true.to(device))
             loss.backward()
             optimizer.step()
             iterator.set_description(f"train loss={loss:.2f}")
