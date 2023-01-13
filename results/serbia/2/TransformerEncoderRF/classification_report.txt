@@ -1,0 +1,14 @@
+              precision    recall  f1-score   support
+
+      barley       0.88      0.49      0.63        47
+       maize       0.82      0.92      0.87       527
+    rapeseed       1.00      0.88      0.93        16
+        soya       0.95      0.31      0.47        58
+   sugarbeet       0.00      0.00      0.00         4
+   sunflower       0.85      0.75      0.80       258
+       wheat       0.79      0.93      0.85       190
+
+    accuracy                           0.83      1100
+   macro avg       0.76      0.61      0.65      1100
+weighted avg       0.83      0.83      0.82      1100
+

@@ -8,7 +8,7 @@ import argparse
 import breizhcrops
 from datasets.vojvodina import VojvodinaDataset
 from datasets.bretagne import BretagneDataset
-from breizhcrops.models import LSTM, TempCNN, MSResNet, TransformerModel, InceptionTime, StarRNN, OmniScaleCNN, PETransformerModel
+from breizhcrops.models import LSTM, TempCNN, MSResNet, InceptionTime, StarRNN, OmniScaleCNN, PETransformerModel
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from torch.optim import Adam
@@ -17,6 +17,68 @@ import pandas as pd
 import os
 import sklearn.metrics
 
+from torch.nn.modules.transformer import TransformerEncoder, TransformerEncoderLayer
+from torch.nn.modules import LayerNorm, Linear, Sequential, ReLU
+
+import torch.nn as nn
+import torch.nn.functional as F
+
+class TransformerModel(nn.Module):
+    def __init__(self, input_dim=13, num_classes=9, init_weights = None, d_model=64, n_head=2, n_layers=5,
+                 d_inner=128, activation="relu", dropout=0.017998950510888446):
+        
+        super(TransformerModel, self).__init__()
+        self.modelname = f"TransformerEncoder_input-dim={input_dim}_num-classes={num_classes}_" \
+                         f"d-model={d_model}_d-inner={d_inner}_n-layers={n_layers}_n-head={n_head}_" \
+                         f"dropout={dropout}"
+        self.init_weights = init_weights
+        encoder_layer = TransformerEncoderLayer(d_model, n_head, d_inner, dropout, activation)
+        encoder_norm = LayerNorm(d_model)
+
+        self.inlinear = Linear(input_dim, d_model)
+        self.relu = ReLU()
+        self.transformerencoder = TransformerEncoder(encoder_layer, n_layers, encoder_norm)
+        self.flatten = Flatten()
+        #self.outlinear = Linear(d_model, num_classes)
+
+        if init_weights:
+            self.outlinear = Linear(d_model, 9)
+            self.load_state_dict(torch.load(self.init_weights, map_location=torch.device('cpu'))['model_state'])
+            self.inlinear.weight.requires_grad = True
+            self.inlinear.bias.requires_grad = True
+            self.transformerencoder.requires_grad = True
+        
+        self.outlinear = Linear(d_model, num_classes)
+            
+        
+        """
+        self.sequential = Sequential(
+            ,
+            ,
+            ,
+            ,
+            ReLU(),
+
+        )
+        """
+
+    def forward(self,x):
+        x = self.inlinear(x)
+        x = self.relu(x)
+        x = x.transpose(0, 1) # N x T x D -> T x N x D
+        x = self.transformerencoder(x)
+        x = x.transpose(0, 1) # T x N x D -> N x T x D
+        x = x.max(1)[0]
+        x = self.relu(x)
+        logits = self.outlinear(x)
+
+        logprobabilities = F.log_softmax(logits, dim=-1)
+        return logprobabilities
+
+class Flatten(nn.Module):
+    def forward(self, input):
+        return input.reshape(input.size(0), -1)
+
 
 def train(args):
     traindataloader, testdataloader, meta = get_dataloader(args.datapath, args.mode, args.batchsize, args.workers, args.preload_ram, args.level)
@@ -24,9 +86,10 @@ def train(args):
     num_classes = meta["num_classes"]
     ndims = meta["ndims"]
     sequencelength = meta["sequencelength"]
+    init_weights = args.init_weights
 
     device = torch.device(args.device)
-    model = get_model(args.model, ndims, num_classes, sequencelength, device, **args.hyperparameter)
+    model = get_model(args.model, ndims, num_classes, init_weights, sequencelength, device, **args.hyperparameter)
     optimizer = Adam(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
     model.modelname += f"_learning-rate={args.learning_rate}_weight-decay={args.weight_decay}"
     print(f"Initialized {model.modelname}")
@@ -137,7 +200,7 @@ def get_dataloader(datapath, mode, batchsize, workers, preload_ram=False, level=
     return traindataloader, testdataloader, meta
 
 
-def get_model(modelname, ndims, num_classes, sequencelength, device, **hyperparameter):
+def get_model(modelname, ndims, num_classes, init_weights,  sequencelength, device, **hyperparameter):
     modelname = modelname.lower() #make case invariant
     if modelname == "omniscalecnn":
         model = OmniScaleCNN(input_dim=ndims, num_classes=num_classes, sequencelength=sequencelength, **hyperparameter).to(device)
@@ -158,6 +221,10 @@ def get_model(modelname, ndims, num_classes, sequencelength, device, **hyperpara
         model = MSResNet(input_dim=ndims, num_classes=num_classes, **hyperparameter).to(device)
     elif modelname in ["transformerencoder","transformer"]:
         model = TransformerModel(input_dim=ndims, num_classes=num_classes,
+                            activation="relu",
+                            **hyperparameter).to(device)
+    elif modelname == "transformerpretrained":
+        model = TransformerModel(input_dim=ndims, num_classes=num_classes,init_weights = init_weights,
                             activation="relu",
                             **hyperparameter).to(device)
     elif modelname in ["petransformer"]:
@@ -273,6 +340,9 @@ def parse_args():
     parser.add_argument(
         '-d', '--device', type=str, default=None, help='torch.Device. either "cpu" or "cuda". '
                                                        'default will check by torch.cuda.is_available() ')
+    parser.add_argument(
+        '--init-weights', type=str, default=None, help='Initial parameters for pre-trained model (transfer learning)'
+                                                       )
     parser.add_argument(
         '-l', '--logdir', type=str, default="/tmp", help='logdir to store progress and models (defaults to /tmp)')
     args = parser.parse_args()

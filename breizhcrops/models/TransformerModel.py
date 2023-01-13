@@ -8,14 +8,14 @@ import torch.nn.functional as F
 __all__ = ['TransformerModel']
 
 class TransformerModel(nn.Module):
-    def __init__(self, input_dim=13, num_classes=9, d_model=64, n_head=2, n_layers=5,
+    def __init__(self, input_dim=13, num_classes=9, init_weights = None, d_model=64, n_head=2, n_layers=5,
                  d_inner=128, activation="relu", dropout=0.017998950510888446):
-
+        
         super(TransformerModel, self).__init__()
         self.modelname = f"TransformerEncoder_input-dim={input_dim}_num-classes={num_classes}_" \
                          f"d-model={d_model}_d-inner={d_inner}_n-layers={n_layers}_n-head={n_head}_" \
                          f"dropout={dropout}"
-
+        self.init_weights = init_weights
         encoder_layer = TransformerEncoderLayer(d_model, n_head, d_inner, dropout, activation)
         encoder_norm = LayerNorm(d_model)
 
@@ -25,6 +25,12 @@ class TransformerModel(nn.Module):
         self.flatten = Flatten()
         self.outlinear = Linear(d_model, num_classes)
 
+        if init_weights:
+            self.load_state_dict(torch.load(self.init_weights, map_location=torch.device('cpu'))['model_state'])
+            self.inlinear.requires_grad_ = False
+            self.transformerencoder.requires_grad_ = False
+            
+        
         """
         self.sequential = Sequential(
             ,

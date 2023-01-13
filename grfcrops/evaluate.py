@@ -21,6 +21,7 @@ def main(args):
     num_classes = meta["num_classes"]
     ndims = meta["ndims"]
     sequencelength = meta["sequencelength"]
+    init_weights = args.init_weights
 
     print(f"Logging results to {args.logdir}")
     logdir = os.path.join(args.logdir, str(args.fold))
@@ -29,7 +30,7 @@ def main(args):
     epochs, learning_rate, weight_decay = select_hyperparameter(args.model)
 
     device = torch.device(args.device)
-    model = get_model(args.model, ndims, num_classes, sequencelength, device)
+    model = get_model(args.model, ndims, num_classes, init_weights, sequencelength, device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     model.modelname += f"_learning-rate={learning_rate}_weight-decay={weight_decay}"
     print(f"Initialized {model.modelname}")
@@ -64,7 +65,7 @@ def select_hyperparameter(model):
         epochs, learning_rate, weight_decay = 23, 0.0005930998594456241, 1.8660112778851542e-05
     elif model == "MSResNet":
         epochs, learning_rate, weight_decay = 23, 0.0006271686393146093, 4.750234747127917e-06
-    elif model == "TransformerEncoder":
+    elif model in ["TransformerEncoder", "TransformerPretrained"]:
         epochs, learning_rate, weight_decay = 30, 0.00017369201853408445, 3.5156458637523697e-06
     elif model == "TempCNN":
         epochs, learning_rate, weight_decay = 11, 0.00023892874563871753, 5.181869707846283e-05
@@ -97,7 +98,8 @@ def parse_args():
         '-l', '--logdir', type=str, default="/tmp", help='logdir to store progress and models (defaults to /tmp)')
     parser.add_argument(
         '--preload-ram', action='store_true', help='load dataset into RAM upon initialization')
-
+    parser.add_argument(
+        '--init-weights', type=str, default=None, help='Initial parameters for pre-trained model (transfer learning)')
     args = parser.parse_args()
 
     if args.device is None:
