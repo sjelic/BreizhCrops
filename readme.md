@@ -1,6 +1,6 @@
 ## Transfer learning approach based on satellite image time series for the crop classification problem
 
-The code is also a contribution to the publicly available code at repositry:
+The code is a contribution to the publicly available code at repositry:
 
 https://github.com/dl4sits/BreizhCrops
 
